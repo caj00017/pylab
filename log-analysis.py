@@ -4,24 +4,39 @@ logs = [
     "castor memory 81.2 OK",
     "pollux memory 91.4 WARNING",
     "minecraft cpu 95.8 CRITICAL",
-    "castor cpu 67.3 OK",
+
+    "castor cpu banana OK",
+
     "minecraft memory 88.1 WARNING",
     "pollux cpu 78.2 OK",
-    "minecraft cpu 97.1 CRITICAL",
+
+    "minecraft 97.1 CRITICAL",
+
     "pihole memory 45.6 OK",
-    "castor disk 92.0 WARNING"
+    "castor disk 92.0 WARNING",
+
+    "pollux disk 84.3 VERY BAD",
+
+    "minecraft cpu 99.2 CRITICAL"
 ]
 
 # parsing a log
 def parse_log(line):
-    host, metric, value, status = line.split()
-    return (host, metric, float(value), status)
+    try:
+        host, metric, value, status = line.split()
+        return (host, metric, float(value), status)
+    except ValueError as e:
+        print(f"Invalid log '{line}': {e}")
+        return None
 
 # finding unhealthy readings
 def get_unhealthy(logs):
     result = []
     for log in logs:
-        host, metric, value, status = parse_log(log)
+        parsed = parse_log(log)
+        if parsed is None:
+            continue
+        host, metric, value, status = parsed
         # if status == "WARNING" or status == "CRITICAL": This is what I had before, and it's a bit Java-y, what i have below is more uniquely Python
         if status in {"WARNING", "CRITICAL"}:
             result.append((host, metric, float(value), status))
@@ -31,7 +46,10 @@ def get_unhealthy(logs):
 def count_statuses(logs):
     counts = {}
     for log in logs:
-        _, _, _, status = parse_log(log)
+        parsed = parse_log(log)
+        if parsed is None:
+            continue
+        host, metric, value, status = parsed
         counts[status] = counts.get(status, 0) + 1
         # Previously, I did this, which is correct, but if I wanna do something more Python, I can do something like the above.
         # This assigns the default value of 0 if it does not already exist and then adds 1 for a default value of 1, also adding one each time that value is retrieved, 
@@ -59,7 +77,10 @@ def average_by_server(logs):
     result = {}
     counts = {}
     for log in logs:
-        host, metric, value, status = parse_log(log)
+        parsed = parse_log(log)
+        if parsed is None:
+            continue
+        host, metric, value, status = parsed
         if host not in result:
             result[host] = value    
             counts[host] = 1
