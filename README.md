@@ -1,0 +1,3 @@
+# pylab
+
+As I pursue a career in Software Engineering, Systems Engineering, DevOps, Cybersecurity, etc. it becomes increasingly clear how important Python is to know intimately. I want to understand and be able to build the kinds of projects that are being built in the world that I want to work in. So, in the interest of expanding my Python knowledge and applying that growing knowledge in a hands-on environment, I am developing this small Python lab where I can build, test and experiment with the kinds of Python work I want to be doing in my career.
