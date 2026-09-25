@@ -13,9 +13,11 @@ from log import Log
 def parse_log(line):
     try:
         host, metric, value, status = line.split()
-        return Log(host, metric, float(value), status)
+        log = Log(host, metric, float(value), status)
+        print(f"Parsed:\t{host}\t{metric}\t{value}\t{status}")
+        return log
     except ValueError as e:
-        print(f"Invalid log '{line}': {e}")
+        print(f"Error:\tCould not parse invalid log '{line}': {e}")
         return None
 
 # parsing all logs
@@ -47,7 +49,7 @@ def count_statuses(logs):
     counts = {}
     for log in logs:
         # status = log.status; No need to have this anymore like I did before, I can simplify by adding log.status directly.
-        counts[log.status] = counts.get(status, 0) + 1
+        counts[log.status] = counts.get(log.status, 0) + 1
         # Previously, I did this, which is correct, but if I wanna do something more Python, I can do something like the above.
         # This assigns the default value of 0 if it does not already exist and then adds 1 for a default value of 1, also adding one each time that value is retrieved, 
         # which essentially achieves the same as below.
@@ -92,37 +94,38 @@ def average_by_server(logs):
 
 # Use all functions above to print a clean report of all values
 def generate_report(logs):
-    print("======= HOMELAB HEALTH REPORT =======")
+    with open("report.txt", "w") as file:
+        file.write("======= HOMELAB HEALTH REPORT =======")
 
-    print("\nStatus Counts:")
-    statuses = count_statuses(logs)
+        file.write("\n\nStatus Counts:")
+        statuses = count_statuses(logs)
 
-    # Previously, I was doing the following, which worked, but it assumed these things exist. Instead, I should've done what follows, had I known.
-    # print(f"OK: {statuses["OK"]}")
-    # print(f"WARNING: {statuses["WARNING"]}")
-    # print(f"CRITICAL: {statuses["CRITICAL"]}")
+        # Previously, I was doing the following, which worked, but it assumed these things exist. Instead, I should've done what follows, had I known.
+        # print(f"OK: {statuses["OK"]}")
+        # print(f"WARNING: {statuses["WARNING"]}")
+        # print(f"CRITICAL: {statuses["CRITICAL"]}")
 
-    for status, count in statuses.items():
-        print(f"{status}: {count}")
+        for status, count in statuses.items():
+            file.write(f"\n{status}: {count}")
 
-    print("\nAffected Servers:")
-    servers = affected_servers(logs)
-    for server in servers:
-        print(server)
+        file.write("\n\nAffected Servers:")
+        servers = affected_servers(logs)
+        for server in servers:
+            file.write(f"\n{server}")
 
-    print("\nAverage Readings:")
-    averages = average_by_server(logs)
-    for host, average in averages.items(): # using .items() to access both the host and its average value in the dict
-        print(f"{host}: {average:.2f}")
+        file.write("\n\nAverage Readings:")
+        averages = average_by_server(logs)
+        for host, average in averages.items(): # using .items() to access both the host and its average value in the dict
+            file.write(f"\n{host}: {average:.2f}")
 
-    print("\nUnhealthy Readings:")
-    unhealthy_logs = get_unhealthy(logs)
-    for log in unhealthy_logs:
-        host = log.hostname
-        metric = log.service
-        value = log.value
-        status = log.status
-        print(f"({status}): {host}'s {metric} at {value}.")
+        file.write("\n\nUnhealthy Readings:")
+        unhealthy_logs = get_unhealthy(logs)
+        for log in unhealthy_logs:
+            host = log.hostname
+            metric = log.service
+            value = log.value
+            status = log.status
+            file.write(f"\n({status}): {host}'s {metric} at {value}.")
 
 
 # These are example logs.
@@ -130,4 +133,5 @@ logs = Log.get_example_logs()
 parsed_logs = parse_all_logs(logs)
 
 generate_report(parsed_logs)
+print("\nReport written to report.txt.")
     

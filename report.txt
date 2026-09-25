@@ -1,0 +1,24 @@
+======= HOMELAB HEALTH REPORT =======
+
+Status Counts:
+OK: 4
+WARNING: 3
+CRITICAL: 2
+
+Affected Servers:
+minecraft
+pollux
+castor
+
+Average Readings:
+pollux: 80.70
+castor: 86.60
+minecraft: 94.37
+pihole: 45.60
+
+Unhealthy Readings:
+(WARNING): pollux's memory at 91.4.
+(CRITICAL): minecraft's cpu at 95.8.
+(WARNING): minecraft's memory at 88.1.
+(WARNING): castor's disk at 92.0.
+(CRITICAL): minecraft's cpu at 99.2.

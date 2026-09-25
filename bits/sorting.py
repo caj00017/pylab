@@ -1,9 +1,3 @@
-class Log:
-    def __init__(self, service, status, latency):
-        self.service = service
-        self.status = status
-        self.latency = latency
-
 times = [240, 103, 88]
 
 print(sorted(times)) # this does not change the list itself, it just returns the sorted version
