@@ -1,57 +1,53 @@
-# These are example logs.
-logs = [
-    "pollux cpu 72.5 OK",
-    "castor memory 81.2 OK",
-    "pollux memory 91.4 WARNING",
-    "minecraft cpu 95.8 CRITICAL",
+# Author: Christopher Jones
+# Log Analysis Learning Project. See README.md.
 
-    # deliberately invalid log to show error handling
-    "castor cpu banana OK",
+# This log analyzer expects logs in the following format:
+# hostname service value status
+# For example, a log that this tool can parse might look like:
+# pollux api 90 CRITICAL
 
-    "minecraft memory 88.1 WARNING",
-    "pollux cpu 78.2 OK",
-
-    "minecraft 97.1 CRITICAL",
-
-    "pihole memory 45.6 OK",
-    "castor disk 92.0 WARNING",
-
-    "pollux disk 84.3 VERY BAD",
-
-    "minecraft cpu 99.2 CRITICAL"
-]
+# import statement is required so that Python knows to refer to log.py when I use stuff from my log class.
+from log import Log
 
 # parsing a log
 def parse_log(line):
     try:
         host, metric, value, status = line.split()
-        return (host, metric, float(value), status)
+        return Log(host, metric, float(value), status)
     except ValueError as e:
         print(f"Invalid log '{line}': {e}")
         return None
+
+# parsing all logs
+def parse_all_logs(logs):
+    print("Parsing logs...")
+    log_obj_list = []
+    for log in logs:
+        this_log = parse_log(log)
+        if this_log is None:
+            continue
+        log_obj_list.append(this_log)
+    return log_obj_list # Previously forgot to return this, which resulted in a TypeError in the first count_statuses call.
 
 # finding unhealthy readings
 def get_unhealthy(logs):
     result = []
     for log in logs:
-        parsed = parse_log(log)
-        if parsed is None:
-            continue
-        host, metric, value, status = parsed
+        host = log.hostname
+        metric = log.service
+        value = log.value
+        status = log.status
         # if status == "WARNING" or status == "CRITICAL": This is what I had before, and it's a bit Java-y, what i have below is more uniquely Python
         if status in {"WARNING", "CRITICAL"}:
-            result.append((host, metric, float(value), status))
+            result.append(log) # no need to create a new object here, i can just append this existing Log object
     return result
 
 # counting statuses
 def count_statuses(logs):
     counts = {}
     for log in logs:
-        parsed = parse_log(log)
-        if parsed is None:
-            continue
-        host, metric, value, status = parsed
-        counts[status] = counts.get(status, 0) + 1
+        # status = log.status; No need to have this anymore like I did before, I can simplify by adding log.status directly.
+        counts[log.status] = counts.get(status, 0) + 1
         # Previously, I did this, which is correct, but if I wanna do something more Python, I can do something like the above.
         # This assigns the default value of 0 if it does not already exist and then adds 1 for a default value of 1, also adding one each time that value is retrieved, 
         # which essentially achieves the same as below.
@@ -68,20 +64,22 @@ def affected_servers(logs):
     unhealthy_logs = get_unhealthy(logs)
     unhealthy_hosts = set()
     for log in unhealthy_logs:
-        host, metric, value, status = log
-        unhealthy_hosts.add(host)
+        # host = log.hostname; No need to have this anymore like I did before, I can simplify by adding log.hostname directly.
+        unhealthy_hosts.add(log.hostname)
     return unhealthy_hosts
 
 # average metrics
 # returns the average of all numeric readings for each server
+# NOTE: This currently averages all numeric readings for each server, which isn't particularly useful.
+# Instead, this function should be tweaked so that it averages each different kind of metric for each server.
 def average_by_server(logs):
     result = {}
     counts = {}
     for log in logs:
-        parsed = parse_log(log)
-        if parsed is None:
-            continue
-        host, metric, value, status = parsed
+        host = log.hostname
+        metric = log.service
+        value = log.value
+        status = log.status
         if host not in result:
             result[host] = value    
             counts[host] = 1
@@ -120,8 +118,16 @@ def generate_report(logs):
     print("\nUnhealthy Readings:")
     unhealthy_logs = get_unhealthy(logs)
     for log in unhealthy_logs:
-        host, metric, value, status = log
+        host = log.hostname
+        metric = log.service
+        value = log.value
+        status = log.status
         print(f"({status}): {host}'s {metric} at {value}.")
 
-generate_report(logs)
+
+# These are example logs.
+logs = Log.get_example_logs()
+parsed_logs = parse_all_logs(logs)
+
+generate_report(parsed_logs)
     

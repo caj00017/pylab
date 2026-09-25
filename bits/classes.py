@@ -34,3 +34,14 @@ class Log:
             "minecraft cpu 99.2 CRITICAL"
         ]
         return logs
+
+class ErrorLog(Log): # inheritance is done by passing the parent object into the subclass
+    def __init__(self, hostname, service, value, status, message):
+        super().__init__(hostname, service, value, status) # let's use the same data members as the parent class
+        self.message = message # but also add a new data member specific to error logs
+
+log = Log("pollux", "api", 500, 103.2) # instantiating an object
+print(f"Log service: {log.service}") # accessing the data member
+print(f"{log.service} status: {log.get_status()}") # using the method
+
+print(Log.get_example_logs()) # using a static method
