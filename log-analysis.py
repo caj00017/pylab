@@ -5,6 +5,7 @@ logs = [
     "pollux memory 91.4 WARNING",
     "minecraft cpu 95.8 CRITICAL",
 
+    # deliberately invalid log to show error handling
     "castor cpu banana OK",
 
     "minecraft memory 88.1 WARNING",
