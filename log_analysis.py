@@ -21,54 +21,54 @@ def parse_log(line):
         return None
 
 # parsing all logs
+# This function is equivalent to (but significantly more readable than):
+# log_obj_list = []
+# for log in logs:
+#     this_log = parse_log(log)
+#     if this_log is None:
+#         continue
+#     log_obj_list.append(this_log)
+# return log_obj_list # Previously forgot to return this, which resulted in a TypeError in the first count_statuses call.
 def parse_all_logs(logs):
-    print("Parsing logs...")
-    log_obj_list = []
-    for log in logs:
-        this_log = parse_log(log)
-        if this_log is None:
-            continue
-        log_obj_list.append(this_log)
-    return log_obj_list # Previously forgot to return this, which resulted in a TypeError in the first count_statuses call.
+    return [parse_log(log) for log in logs if parse_log(log) is not None]
 
 # finding unhealthy readings
+# Note that this is equivalent to what I was doign before, which was 
+# unhealthy = []
+# for log in logs:
+#     if log.status in {"WARNING", "CRITICAL"}:
+#         unhealthy.append(log)
+# return unhealthy
 def get_unhealthy(logs):
-    result = []
-    for log in logs:
-        host = log.hostname
-        metric = log.service
-        value = log.value
-        status = log.status
-        # if status == "WARNING" or status == "CRITICAL": This is what I had before, and it's a bit Java-y, what i have below is more uniquely Python
-        if status in {"WARNING", "CRITICAL"}:
-            result.append(log) # no need to create a new object here, i can just append this existing Log object
-    return result
+    return [log for log in logs if log.status in {"WARNING", "CRITICAL"}]
+
 
 # counting statuses
+# Previously, I did this, which is correct, but if I wanna do something more Python, I can do something like the above.
+# This assigns the default value of 0 if it does not already exist and then adds 1 for a default value of 1, also adding one each time that value is retrieved, 
+# which essentially achieves the same as below.
+# status = log.status; No need to have this anymore like I did before, I can simplify by adding log.status directly.
+# if status not in counts:
+#     counts[status] = 1
+# else:
+#     counts[status] += 1
 def count_statuses(logs):
     counts = {}
     for log in logs:
-        # status = log.status; No need to have this anymore like I did before, I can simplify by adding log.status directly.
         counts[log.status] = counts.get(log.status, 0) + 1
-        # Previously, I did this, which is correct, but if I wanna do something more Python, I can do something like the above.
-        # This assigns the default value of 0 if it does not already exist and then adds 1 for a default value of 1, also adding one each time that value is retrieved, 
-        # which essentially achieves the same as below.
-        # if status not in counts:
-        #     counts[status] = 1
-        # else:
-        #     counts[status] += 1
+        
     return counts
-
 
 # finding affected servers
 # returns a set contianing every seerver that has experienced at least one WARNING or CRITICAL
+# This function is equivalent to (but significantly more readable than):
+# unhealthy_logs = get_unhealthy(logs)
+# unhealthy_hosts = set()
+# for log in unhealthy_logs:
+#     # host = log.hostname; No need to have this anymore like I did before, I can simplify by adding log.hostname directly.
+#     unhealthy_hosts.add(log.hostname)
 def affected_servers(logs):
-    unhealthy_logs = get_unhealthy(logs)
-    unhealthy_hosts = set()
-    for log in unhealthy_logs:
-        # host = log.hostname; No need to have this anymore like I did before, I can simplify by adding log.hostname directly.
-        unhealthy_hosts.add(log.hostname)
-    return unhealthy_hosts
+    return {log.hostname for log in get_unhealthy(logs)}
 
 # average metrics
 # returns the average of all numeric readings for each server
@@ -79,9 +79,7 @@ def average_by_server(logs):
     counts = {}
     for log in logs:
         host = log.hostname
-        metric = log.service
         value = log.value
-        status = log.status
         if host not in result:
             result[host] = value    
             counts[host] = 1
@@ -127,11 +125,14 @@ def generate_report(logs):
             status = log.status
             file.write(f"\n({status}): {host}'s {metric} at {value}.")
 
+def main():
+    # These are example logs.
+    logs = Log.get_example_logs()
+    parsed_logs = parse_all_logs(logs)
 
-# These are example logs.
-logs = Log.get_example_logs()
-parsed_logs = parse_all_logs(logs)
+    generate_report(parsed_logs)
+    print("\nReport written to report.txt.")
 
-generate_report(parsed_logs)
-print("\nReport written to report.txt.")
+if __name__ == "__main__":
+    main()
     
