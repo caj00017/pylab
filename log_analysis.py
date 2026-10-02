@@ -30,7 +30,12 @@ def parse_log(line):
 #     log_obj_list.append(this_log)
 # return log_obj_list # Previously forgot to return this, which resulted in a TypeError in the first count_statuses call.
 def parse_all_logs(logs):
-    return [parse_log(log) for log in logs if parse_log(log) is not None]
+    # return [parse_log(log) for log in logs if parse_log(log) is not None]
+    # The following approach avoids constructing an entirely new list. It also calls parse_log() only once.
+    for log in logs:
+        parsed_log = parse_log(log)
+        if parsed_log is not None:
+            yield parsed_log
 
 # finding unhealthy readings
 # Note that this is equivalent to what I was doign before, which was 

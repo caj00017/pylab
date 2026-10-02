@@ -12,8 +12,6 @@ class Log:
 
     @staticmethod # this is how we indicate the method is statically accessed
     def get_example_logs():
-        logs = []
         with open("logs.txt", "r") as file:
             for log in file:
-                logs.append(log)
-        return logs
+                yield log       # rather than building a list, i am now yielding one log at a time
