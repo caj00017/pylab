@@ -8,6 +8,7 @@
 
 # import statement is required so that Python knows to refer to log.py when I use stuff from my log class.
 from log import Log
+import argparse
 
 # parsing a log
 def parse_log(line):
@@ -147,8 +148,8 @@ def compare_metrics(logs):
 
 
 # Use all functions above to print a clean report of all values
-def generate_report(logs):
-    with open("report.txt", "w") as file:
+def generate_report(logs, output_file):
+    with open(output_file, "w") as file:
         file.write("======= HOMELAB HEALTH REPORT =======")
 
         file.write("\n\nAll hosts:\n")
@@ -195,12 +196,32 @@ def generate_report(logs):
             file.write("\n")
 
 def main():
-    # These are example logs.
-    logs = Log.get_example_logs()
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "logfile",
+        help="Log file to analyze"
+    )
+
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="report.txt",
+        help="Output file to write results to."
+    )
+
+    args = parser.parse_args()
+
+    logfile = args.logfile
+    output_file = args.output
+    
+    # get logs from a logfile provided by the user.
+    logs = Log.get_logs_from_file(logfile)
     parsed_logs = parse_all_logs(logs)
 
-    generate_report(parsed_logs)
-    print("\nReport written to report.txt.")
+    generate_report(parsed_logs, output_file)
+    print(f"\nReport written to {output_file}")
 
 if __name__ == "__main__":
     main()

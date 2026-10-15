@@ -11,7 +11,7 @@ class Log:
         return self.status
 
     @staticmethod # this is how we indicate the method is statically accessed
-    def get_example_logs():
-        with open("logs.txt", "r") as file:
+    def get_logs_from_file(logfile):
+        with open(logfile, "r") as file:
             for log in file:
                 yield log       # rather than building a list, i am now yielding one log at a time

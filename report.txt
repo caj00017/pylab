@@ -1,10 +1,10 @@
 ======= HOMELAB HEALTH REPORT =======
 
 All hosts:
+pollux
 castor
 pihole
 minecraft
-pollux
 
 
 Status Counts:
