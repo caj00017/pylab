@@ -218,7 +218,7 @@ def main():
     
     # get logs from a logfile provided by the user.
     logs = Log.get_logs_from_file(logfile)
-    parsed_logs = parse_all_logs(logs)
+    parsed_logs = list(parse_all_logs(logs))
 
     generate_report(parsed_logs, output_file)
     print(f"\nReport written to {output_file}")
